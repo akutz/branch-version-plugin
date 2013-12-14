@@ -28,8 +28,14 @@ public class SetBranchVerMojo extends AbstractBaseMojo
     private final static Pattern DEFAULT_SKIP_BRANCHES_PATT = Pattern
         .compile("(?i)master|develop|(?:(?:release|hotfix)/.*)");
 
+    private final static String TC_BUILD_NUM_FMT =
+        "##teamcity[buildNumber '%s']";
+
     @Parameter(alias = "branch", property = "branch")
     private String branch;
+
+    @Parameter(alias = "buildNumber", property = "buildNumber")
+    private String buildNumber;
 
     @Parameter(alias = "skipBranchesRegex", property = "skipBranchesRegex")
     private String skipBranchesRegex;
@@ -41,6 +47,7 @@ public class SetBranchVerMojo extends AbstractBaseMojo
 
         if (skipBranch())
         {
+            reportVersion(super.project.getVersion());
             return;
         }
 
@@ -49,10 +56,13 @@ public class SetBranchVerMojo extends AbstractBaseMojo
         if (super.dryRun)
         {
             getLog().info(String.format("dryRun=true"));
-            return;
+        }
+        else
+        {
+            setVersion(newVersion);
         }
 
-        setVersion(newVersion);
+        reportVersion(newVersion);
     }
 
     private String getNewVersion() throws MojoExecutionException
@@ -81,6 +91,20 @@ public class SetBranchVerMojo extends AbstractBaseMojo
         return nv;
     }
 
+    private void reportVersion(String version)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(version);
+
+        if (StringUtils.isNotEmpty(this.buildNumber))
+        {
+            sb.append(" Build ");
+            sb.append(this.buildNumber);
+        }
+
+        getLog().info(String.format(TC_BUILD_NUM_FMT, sb.toString()));
+    }
+
     private String getBranchName() throws MojoExecutionException
     {
         if (StringUtils.isNotEmpty(this.branch))
@@ -100,7 +124,7 @@ public class SetBranchVerMojo extends AbstractBaseMojo
 
         String branchName = getCurrentBranchName(gitDir);
 
-        if (StringUtils.isEmpty(branch))
+        if (StringUtils.isEmpty(branchName))
         {
             throw new MojoExecutionException("branch name unavailable");
         }
