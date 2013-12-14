@@ -85,7 +85,7 @@ public class SetBranchVerMojo extends AbstractBaseMojo
     {
         if (StringUtils.isNotEmpty(this.branch))
         {
-            return this.branch;
+            return getLastPathPart(this.branch);
         }
 
         // Get the project's base directory.
@@ -98,20 +98,24 @@ public class SetBranchVerMojo extends AbstractBaseMojo
                 baseDir));
         }
 
-        this.branch = getCurrentBranchName(gitDir);
+        String branchName = getCurrentBranchName(gitDir);
 
         if (StringUtils.isEmpty(branch))
         {
             throw new MojoExecutionException("branch name unavailable");
         }
 
-        // Strip the branch name of any path components.
-        getLog().info("branch name raw=" + branch);
-        String[] branchParts = branch.split("/");
-        this.branch = branchParts[branchParts.length - 1];
-        getLog().info("branch name final=" + branch);
+        return getLastPathPart(branchName);
+    }
 
-        return this.branch;
+    private String getLastPathPart(String branchName)
+    {
+        // Strip the branch name of any path components.
+        getLog().info("branch name raw=" + branchName);
+        String[] branchParts = branchName.split("/");
+        branchName = branchParts[branchParts.length - 1];
+        getLog().info("branch name final=" + branchName);
+        return branchName;
     }
 
     private boolean skipBranch()
