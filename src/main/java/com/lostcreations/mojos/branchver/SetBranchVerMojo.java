@@ -43,15 +43,15 @@ public class SetBranchVerMojo extends AbstractBaseMojo
     @Override
     public void execute() throws MojoExecutionException
     {
-        this.branch = getBranchName();
+        BranchName branchName = getBranchName();
 
-        if (skipBranch())
+        if (skipBranch(branchName.toString()))
         {
             reportVersion(super.project.getVersion());
             return;
         }
 
-        String newVersion = getNewVersion();
+        String newVersion = getNewVersion(branchName.getName());
 
         if (super.dryRun)
         {
@@ -65,7 +65,8 @@ public class SetBranchVerMojo extends AbstractBaseMojo
         reportVersion(newVersion);
     }
 
-    private String getNewVersion() throws MojoExecutionException
+    private String getNewVersion(String branchName)
+        throws MojoExecutionException
     {
         String v = this.project.getVersion();
 
@@ -84,7 +85,7 @@ public class SetBranchVerMojo extends AbstractBaseMojo
         String ovs = ov.getSuffix();
 
         // Build the new version.
-        String nv = String.format("%s%s-%s%s", ovp, ovn, this.branch, ovs);
+        String nv = String.format("%s%s-%s%s", ovp, ovn, branchName, ovs);
 
         getLog().info(String.format("new version='%s'", nv));
 
@@ -105,11 +106,11 @@ public class SetBranchVerMojo extends AbstractBaseMojo
         getLog().info(String.format(TC_BUILD_NUM_FMT, sb.toString()));
     }
 
-    private String getBranchName() throws MojoExecutionException
+    private BranchName getBranchName() throws MojoExecutionException
     {
         if (StringUtils.isNotEmpty(this.branch))
         {
-            return getLastPathPart(this.branch);
+            return BranchName.parse(this.branch);
         }
 
         // Get the project's base directory.
@@ -129,20 +130,10 @@ public class SetBranchVerMojo extends AbstractBaseMojo
             throw new MojoExecutionException("branch name unavailable");
         }
 
-        return getLastPathPart(branchName);
+        return BranchName.parse(branchName);
     }
 
-    private String getLastPathPart(String branchName)
-    {
-        // Strip the branch name of any path components.
-        getLog().info("branch name raw=" + branchName);
-        String[] branchParts = branchName.split("/");
-        branchName = branchParts[branchParts.length - 1];
-        getLog().info("branch name final=" + branchName);
-        return branchName;
-    }
-
-    private boolean skipBranch()
+    private boolean skipBranch(String branchName)
     {
         Pattern skipPatt;
 
@@ -158,12 +149,12 @@ public class SetBranchVerMojo extends AbstractBaseMojo
                     Pattern.CASE_INSENSITIVE);
         }
 
-        if (skipPatt.matcher(this.branch).matches())
+        if (skipPatt.matcher(branchName).matches())
         {
             getLog().info(
                 String.format(
                     "current branch='%s' matches no-op branch='%s'",
-                    this.branch,
+                    branchName,
                     skipPatt.pattern()));
 
             return true;
