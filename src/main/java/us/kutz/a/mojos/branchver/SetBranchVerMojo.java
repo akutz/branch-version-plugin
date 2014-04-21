@@ -1,4 +1,4 @@
-package com.lostcreations.mojos.branchver;
+package us.kutz.a.mojos.branchver;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 import java.io.File;
@@ -22,7 +22,7 @@ import org.eclipse.jgit.lib.Repository;
     requiresProject = true,
     threadSafe = true,
     requiresOnline = false)
-@Execute(goal = "set", phase = LifecyclePhase.INITIALIZE)
+@Execute(goal = "set", phase = LifecyclePhase.VALIDATE)
 public class SetBranchVerMojo extends AbstractBaseMojo
 {
     private final static Pattern DEFAULT_SKIP_BRANCHES_PATT = Pattern
@@ -133,7 +133,7 @@ public class SetBranchVerMojo extends AbstractBaseMojo
         return BranchName.parse(branchName);
     }
 
-    private boolean skipBranch(String branchName)
+    public boolean skipBranch(String branchName)
     {
         Pattern skipPatt;
 

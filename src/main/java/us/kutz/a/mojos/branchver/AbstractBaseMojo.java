@@ -1,4 +1,4 @@
-package com.lostcreations.mojos.branchver;
+package us.kutz.a.mojos.branchver;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 import org.apache.maven.execution.MavenSession;

@@ -1,4 +1,4 @@
-package com.lostcreations.mojos.branchver;
+package us.kutz.a.mojos.branchver;
 
 import java.io.Serializable;
 import java.util.regex.Matcher;
